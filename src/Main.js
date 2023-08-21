@@ -7,8 +7,6 @@ import {
   AddDeviceIdToStore,
   AddSDKTokenToStore,
   GetCardsFromStore,
-  GetDeviceIdFromStore,
-  GetSDKTokenFromStore,
 } from './utils/cardStoreUtils';
 import {setCards} from './store/slices/cardsSlice';
 import {setDeviceId} from './store/slices/deviceIdSlice';
@@ -26,16 +24,8 @@ const Main = () => {
   const getCards = async () => {
     setLoading(true);
     const cards = await GetCardsFromStore();
-    const storedDeviceId = await GetDeviceIdFromStore();
 
     dispatch(setCards(cards));
-
-    if (storedDeviceId && storedDeviceId?.trim() !== '') {
-      dispatch(setDeviceId(storedDeviceId));
-      setLoading(false);
-      getSdkToken(storedDeviceId);
-      return;
-    }
 
     try {
       const tmpDeviceId = await getDeviceId();
@@ -53,20 +43,14 @@ const Main = () => {
     }
   };
 
-  const getSdkToken = async device_id => {
-    const storedSdkToken = await GetSDKTokenFromStore();
-
-    if (storedSdkToken) {
-      dispatch(setSDKToken(storedSdkToken));
-      setLoading(false);
-      return;
-    }
-
+  const getSdkToken = async () => {
     setLoading(true);
+
+    const tmpDeviceId = await getDeviceId();
 
     const requestData = {
       access_code: ACCESS_CODE,
-      device_id: device_id,
+      device_id: tmpDeviceId,
       language: 'en',
       merchant_identifier: MERCHENT_IDENTIFIER,
       service_command: 'SDK_TOKEN',

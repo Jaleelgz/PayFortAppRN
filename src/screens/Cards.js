@@ -16,12 +16,12 @@ const Cards = () => {
   const route = useRoute();
   const navigation = useNavigation();
   const cards = useSelector(state => state.cards.value);
-  const {amount} = route?.params;
+  const {amount, email} = route?.params;
 
   const [selectedCard, setSelectedCard] = useState({});
 
   const RenderCard = ({item}) => {
-    const cardParse = CardType(item.number);
+    const cardParse = CardType(item.card_number);
 
     return (
       <Card
@@ -32,15 +32,17 @@ const Cards = () => {
           padding: ScreenPadding,
           borderWidth: 1,
           borderColor:
-            selectedCard?.number === item?.number
+            selectedCard?.card_number === item?.card_number
               ? COLORS.PRIMARY
               : COLORS.DISABLED_D4,
         }}>
         <View style={{flexDirection: 'row', alignItems: 'center', gap: 10}}>
           <RadioButton
-            value={item.number}
+            value={item.card_number}
             status={
-              selectedCard?.number === item?.number ? 'checked' : 'unchecked'
+              selectedCard?.card_number === item?.card_number
+                ? 'checked'
+                : 'unchecked'
             }
             onPress={() => setSelectedCard(item)}
           />
@@ -53,10 +55,10 @@ const Cards = () => {
                 styles.cardNumber,
                 {color: COLORS.GRAY, fontSize: FONT_SIZE.MEDIUM},
               ]}>
-              {item.name}
+              {item.card_holder_name}
             </Text>
-            <Text style={styles.cardNumber}>{item.number}</Text>
-            <Text style={styles.cardNumber}>{item.expiry}</Text>
+            <Text style={styles.cardNumber}>{item.card_number}</Text>
+            <Text style={styles.cardNumber}>{item.expiry_date}</Text>
           </View>
         </View>
       </Card>
@@ -76,22 +78,22 @@ const Cards = () => {
           <View style={{width: '100%', height: 10}} />
         )}
         renderItem={({item}) => <RenderCard item={item} />}
-        keyExtractor={item => item.number}
+        keyExtractor={item => item.card_number}
         style={{marginVertical: 15, flex: 1}}
       />
 
       <TouchableOpacity
-        onPress={() => navigation.navigate('AddCard', {amount})}
+        onPress={() => navigation.navigate('AddNewCard', {amount, email})}
         style={styles.addCardBtn}>
         <MaterialIcons name="add" color={COLORS.PRIMARY} size={24} />
         <Text style={styles.addCardTxt}>Add new card</Text>
       </TouchableOpacity>
 
       <PrimaryButton
-        disabled={!selectedCard?.number}
+        disabled={!selectedCard?.card_number}
         text={'Continue'}
         onPress={() =>
-          navigation.navigate('AddCard', {amount, card: selectedCard})
+          navigation.navigate('AddCard', {amount, email, card: selectedCard})
         }
       />
     </View>

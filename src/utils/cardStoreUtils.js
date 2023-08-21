@@ -1,31 +1,35 @@
+import EncryptedStorage from 'react-native-encrypted-storage';
+
 export const AddCardsToStore = async cards => {
-  // await SecureStore.setItemAsync("cards", JSON.stringify(cards));
+  await EncryptedStorage.setItem('cards', JSON.stringify(cards));
 };
 
 export const GetCardsFromStore = async () => {
-  const cards = [];
+  const cards = await EncryptedStorage.getItem('cards');
 
-  // if (cards) {
-  //   return JSON.parse(cards);
-  // } else {
-  //   return [];
-  // }
-
-  return cards;
+  if (cards) {
+    return JSON.parse(cards);
+  } else {
+    return [];
+  }
 };
 
 export const AddDeviceIdToStore = async id => {
-  //
+  await EncryptedStorage.setItem('deviceId', JSON.stringify(id));
 };
 
 export const GetDeviceIdFromStore = async () => {
-  return undefined;
+  const idRes = await EncryptedStorage.getItem('deviceId');
+
+  return idRes;
 };
 
-export const AddSDKTokenToStore = async id => {
-  //
+export const AddSDKTokenToStore = async token => {
+  await EncryptedStorage.setItem('token', JSON.stringify(token));
 };
 
 export const GetSDKTokenFromStore = async () => {
-  return undefined;
+  const tokenRes = await EncryptedStorage.getItem('token');
+
+  return tokenRes;
 };

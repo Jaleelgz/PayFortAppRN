@@ -7,86 +7,48 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import {PaymentIcon} from 'react-native-payment-icons';
-import moment from 'moment/moment';
 import {useRoute} from '@react-navigation/native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import {GlobalStyles, ScreenPadding} from '../utils/globalStyles';
-import {useDispatch, useSelector} from 'react-redux';
+import {useSelector} from 'react-redux';
 import {COLORS} from '../constants/colors';
 import CardType from 'credit-card-type';
 import {FONTS, FONT_SIZE} from '../constants/fonts';
 import {Checkbox, TextInput} from 'react-native-paper';
 import {useNavigation} from '@react-navigation/native';
-import PrimaryButton from '../components/PrimaryButton';
 import {Toast} from 'react-native-toast-message/lib/src/Toast';
 import {ToastModes} from '../enum/ToastModes';
-import {addCard} from '../store/slices/cardsSlice';
-import {AddCardsToStore} from '../utils/cardStoreUtils';
+import {DirectPayButton} from 'rn-amazon-payment-services';
+import {getUUID} from '../utils/restUtils';
+import {getSdkToken} from '../utils/sdkUtils';
 
 const AddCard = () => {
   const navigation = useNavigation();
-  const dispatch = useDispatch();
   const router = useRoute();
-  const {amount} = router.params;
-  const {height} = useWindowDimensions();
-  const cards = useSelector(state => state.cards.value);
+
+  const {amount, email} = router.params;
+  const {height, width} = useWindowDimensions();
+
+  const [sdkToken, setSDKToken] = useState('');
 
   const [card, setCard] = useState(
     router.params.card
       ? {...router.params.card, cvv: ''}
-      : {number: '', name: '', expiry: '', cvv: '', postal: ''},
+      : {
+          card_number: '',
+          customer_name: '',
+          expiry_date: '',
+          cvv: '',
+        },
   );
+  const [loadding, setLoading] = useState(false);
   const [saveCard, setSaveCard] = useState(true);
   const [disableBtn, setDisableBtn] = useState(true);
   const [cardType, setCardType] = useState('generic');
 
-  const onClickPay = () => {
-    if (!card.number && card.number?.trim()?.length !== 16) {
-      Toast.show({
-        type: ToastModes.error,
-        text1: 'Enter valid card number!',
-      });
-      setDisableBtn(true);
-      return;
-    } else if (card.name?.trim() === '') {
-      Toast.show({
-        type: ToastModes.error,
-        text1: 'Enter holder name!',
-      });
-      setDisableBtn(true);
-      return;
-    } else if (card.cvv?.trim()?.length !== 3) {
-      Toast.show({
-        type: ToastModes.error,
-        text1: 'Enter valid security code!',
-      });
-      setDisableBtn(true);
-      return;
-    } else if (card.postal?.trim() === '') {
-      Toast.show({
-        type: ToastModes.error,
-        text1: 'Enter valid postal code!',
-      });
-      setDisableBtn(true);
-      return;
-    } else if (
-      card.expiry?.trim() === '' ||
-      !moment(card.expiry, 'MM/YY').isValid()
-    ) {
-      Toast.show({
-        type: ToastModes.error,
-        text1: 'Enter valid expiry date!',
-      });
-      setDisableBtn(true);
-      return;
-    } else {
-      onPayment();
-    }
-  };
-
   const validateCardDetails = () => {
-    if (card.number && card.number?.trim()?.length >= 4) {
-      const cardParse = CardType(card.number);
+    if (card.card_number && card.card_number?.trim()?.length >= 4) {
+      const cardParse = CardType(card.card_number);
 
       setCardType(cardParse[0]?.type ?? 'generic');
     }
@@ -101,20 +63,17 @@ const AddCard = () => {
     setDisableBtn(false);
   };
 
-  const onPayment = async () => {
-    if (saveCard) {
-      const isExist = cards.find(tmpCard => tmpCard.number === card.number);
-
-      if (!isExist) {
-        const newCards = [...cards, {...card, cvv: ''}];
-
-        await AddCardsToStore(newCards);
-        dispatch(addCard(card));
-        Toast.show({type: ToastModes.success, text1: 'Card saved!'});
-      }
-    }
+  const onSuccess = async response => {
+    Toast.show({type: ToastModes.success, text1: 'Success!'});
 
     navigation.navigate('Success', {amount});
+  };
+
+  const onFailure = response => {
+    console.log('failure', response);
+    Toast.show({type: ToastModes.error, text1: 'Failed to pay.Try again!'});
+
+    navigation.navigate('Failed', {amount});
   };
 
   const onChangeExpiry = text => {
@@ -127,12 +86,32 @@ const AddCard = () => {
       .replace(/[^\d\/]|^[\/]*$/g, '')
       .replace(/\/\//g, '/');
 
-    setCard({...card, expiry: textTemp});
+    setCard({...card, expiry_date: textTemp});
+  };
+
+  const fetchSdkToken = async () => {
+    setLoading();
+
+    const tmpSdkToken = await getSdkToken();
+
+    if (!tmpSdkToken) {
+      Toast.show({type: ToastModes.error, text1: 'Failed to fetch sdk token!'});
+      setLoading(false);
+      return;
+    }
+
+    setSDKToken(tmpSdkToken);
+    setLoading(false);
+    return;
   };
 
   useEffect(() => {
     validateCardDetails();
   }, [card]);
+
+  useEffect(() => {
+    fetchSdkToken();
+  }, []);
 
   return (
     <ScrollView
@@ -174,8 +153,10 @@ const AddCard = () => {
               editable={!router.params?.card}
               outlineStyle={styles.textInputOutline}
               outlineColor={COLORS.TEXT_SECONDARY}
-              value={card.name}
-              onChangeText={value => setCard({...card, name: value})}
+              value={card.card_holder_name}
+              onChangeText={value =>
+                setCard({...card, card_holder_name: value})
+              }
               maxLength={30}
               style={[styles.textInputStyle]}
               selectionColor={COLORS.PRIMARY}
@@ -189,13 +170,13 @@ const AddCard = () => {
               editable={!router.params?.card}
               outlineStyle={styles.textInputOutline}
               outlineColor={COLORS.TEXT_SECONDARY}
-              value={card.number}
+              value={card.card_number}
               placeholder="0000 0000 0000 0000"
               keyboardType="number-pad"
               onChangeText={value =>
                 setCard({
                   ...card,
-                  number: value
+                  card_number: value
                     .replace(/\s?/g, '')
                     .replace(/(\d{4})/g, '$1 ')
                     .trim(),
@@ -209,13 +190,13 @@ const AddCard = () => {
 
           <View style={{flexDirection: 'row', alignItems: 'center', gap: 10}}>
             <View style={{flex: 1}}>
-              <Text style={styles.headTxt}>Expiry date</Text>
+              <Text style={styles.headTxt}>expiry_date date</Text>
               <TextInput
                 mode="outlined"
                 editable={!router.params?.card}
                 outlineStyle={styles.textInputOutline}
                 outlineColor={COLORS.TEXT_SECONDARY}
-                value={card.expiry}
+                value={card.expiry_date}
                 placeholder="mm/yy"
                 keyboardType="number-pad"
                 onChangeText={onChangeExpiry}
@@ -245,21 +226,6 @@ const AddCard = () => {
             </View>
           </View>
 
-          <View>
-            <Text style={styles.headTxt}>ZIP/Postal code</Text>
-            <TextInput
-              mode="outlined"
-              editable={!router.params?.card}
-              outlineStyle={styles.textInputOutline}
-              outlineColor={COLORS.TEXT_SECONDARY}
-              value={card.postal}
-              onChangeText={value => setCard({...card, postal: value})}
-              maxLength={10}
-              style={[styles.textInputStyle]}
-              selectionColor={COLORS.PRIMARY}
-            />
-          </View>
-
           {!router.params?.card && (
             <View style={{flexDirection: 'row', alignItems: 'center', gap: 5}}>
               <Checkbox
@@ -273,13 +239,46 @@ const AddCard = () => {
             </View>
           )}
 
-          <View style={{marginTop: 5}}>
-            <PrimaryButton
-              disabled={disableBtn}
-              text={`Pay $${amount}`}
-              onPress={onClickPay}
-            />
-          </View>
+          {card?.cvv?.trim()?.length !== 3 && (
+            <Text
+              style={{...GlobalStyles.screenSubTxt, color: COLORS.TOAST_ERROR}}>
+              Please type valid cvv
+            </Text>
+          )}
+
+          {!loadding &&
+            sdkToken?.trim() !== '' &&
+            card?.cvv?.trim()?.length === 3 && (
+              <DirectPayButton
+                requestObject={{
+                  command: 'PURCHASE',
+                  merchant_reference: getUUID(),
+                  amount: amount,
+                  currency: 'AED',
+                  language: 'en',
+                  customer_email: email,
+                  sdk_token: sdkToken,
+                  token_name: card.token_name,
+                  card_security_code: card.cvv,
+                }}
+                environment={'TEST'}
+                style={{width: width, height: 100}}
+                payButtonProps={{
+                  marginTop: 20,
+                  marginLeft: 20,
+                  backgroundColor: COLORS.PRIMARY,
+                  text: `Pay $${amount}`,
+                  textSize: FONT_SIZE.MEDIUM,
+                  textColor: '#ffffff',
+                  buttonWidth: 150,
+                  buttonHeight: 40,
+                  borderRadius: 5,
+                  textFontFamily: FONTS.InterBold,
+                }}
+                onFailure={onFailure}
+                onSuccess={onSuccess}
+              />
+            )}
         </View>
       </View>
     </ScrollView>
@@ -296,7 +295,7 @@ const styles = StyleSheet.create({
   innerContainer: {
     borderWidth: 1,
     width: '100%',
-    minHeight: 100,
+    minHeight: 500,
     padding: ScreenPadding,
     borderColor: COLORS.DISABLED_D4,
     borderRadius: 5,

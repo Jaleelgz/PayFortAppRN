@@ -1,5 +1,5 @@
 import 'react-native-gesture-handler';
-import {StatusBar, StyleSheet, Text, View} from 'react-native';
+import {StatusBar, StyleSheet, View} from 'react-native';
 import React from 'react';
 
 import {NavigationContainer} from '@react-navigation/native';
@@ -15,10 +15,7 @@ import {COLORS} from './src/constants/colors';
 
 const App = () => {
   return (
-    <View
-      style={{height: '100%', width: '100%', flex: 1}}
-      //   onLayout={onLayoutRootView}
-    >
+    <View style={{height: '100%', width: '100%', flex: 1}}>
       <StoreProvider store={store}>
         <PaperProvider theme={theme}>
           <NavigationContainer>

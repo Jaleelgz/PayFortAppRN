@@ -6,6 +6,7 @@ import Cards from '../screens/Cards';
 import AddCard from '../screens/AddCard';
 import SuccessPage from '../screens/SuccessPage';
 import AddCardByPayFortUI from '../screens/AddCardByPayFortUI';
+import FailedPage from '../screens/FailedPage';
 
 const Stack = createStackNavigator();
 
@@ -40,6 +41,11 @@ const MainNavigation = () => {
         options={{headerShown: false}}
         name="Success"
         component={SuccessPage}
+      />
+      <Stack.Screen
+        options={{headerShown: false}}
+        name="Failed"
+        component={FailedPage}
       />
     </Stack.Navigator>
   );

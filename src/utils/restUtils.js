@@ -1,4 +1,5 @@
 import axios from 'axios';
+import moment from 'moment';
 import {sha256} from 'react-native-sha256';
 import {BASE_URL, SHA_REQUEST_PHRASE} from '@env';
 
@@ -27,9 +28,26 @@ export const getSignature = async data => {
   const res = await sha256(
     `${SHA_REQUEST_PHRASE}${inputString}${SHA_REQUEST_PHRASE}`,
   ).then(hash => {
-    console.log(hash);
     return hash;
   });
 
   return res ?? '';
+};
+
+export const getUUID = () => {
+  const length = 6;
+  const timeStamp = moment().valueOf();
+
+  const characters =
+    'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let uuid = '';
+
+  for (let i = 0; i < length; i++) {
+    const randomIndex = Math.floor(Math.random() * characters.length);
+    uuid += characters[randomIndex];
+  }
+
+  const finalUUID = `${uuid}-${timeStamp}`;
+
+  return finalUUID;
 };

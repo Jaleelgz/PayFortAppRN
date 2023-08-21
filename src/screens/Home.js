@@ -21,6 +21,7 @@ const Home = () => {
   const numberRegex = /^[1-9]\d*(\.\d+)?$/;
 
   const [amount, setAmount] = useState('');
+  const [email, setEmail] = useState('');
 
   const navigatePage = () => {
     if (amount?.trim() === '' || !amount.match(numberRegex)) {
@@ -31,7 +32,10 @@ const Home = () => {
       return;
     }
 
-    navigation.navigate(cards?.length > 0 ? 'Cards' : 'AddNewCard', {amount});
+    navigation.navigate(cards?.length > 0 ? 'Cards' : 'AddNewCard', {
+      amount,
+      email,
+    });
   };
 
   useEffect(() => {
@@ -86,9 +90,24 @@ const Home = () => {
             }
           />
 
+          <TextInput
+            mode="outlined"
+            outlineStyle={{borderWidth: 1, borderRadius: 5}}
+            outlineColor={COLORS.TEXT_SECONDARY}
+            value={email}
+            keyboardType="email-address"
+            label="Email"
+            onChangeText={setEmail}
+            maxLength={50}
+            style={[styles.emailInput]}
+            selectionColor={COLORS.PRIMARY}
+          />
+
           <PrimaryButton
             text={'Continue'}
-            disabled={false}
+            disabled={
+              !/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email)
+            }
             onPress={navigatePage}
           />
         </View>
@@ -119,12 +138,20 @@ const styles = StyleSheet.create({
   textInputStyle: {
     width: '100%',
     fontSize: FONT_SIZE.BIG,
-    marginBottom: 15,
+    marginBottom: 5,
     marginTop: 20,
     backgroundColor: '#fff',
     borderColor: COLORS.TEXT_SECONDARY,
     fontFamily: FONTS.InterBold,
     fontWeight: 'bold',
+  },
+  emailInput: {
+    width: '100%',
+    fontSize: FONT_SIZE.NORMAL,
+    backgroundColor: '#fff',
+    borderColor: COLORS.TEXT_SECONDARY,
+    fontFamily: FONTS.InterRegular,
+    marginBottom: 15,
   },
   textInputOutline: {
     borderWidth: 2,
