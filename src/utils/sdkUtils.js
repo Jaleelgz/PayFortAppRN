@@ -19,8 +19,6 @@ export const getSdkToken = async () => {
 
   const token = await postData('', {...requestData, signature});
 
-  console.log('Token :', token);
-
   if (!token?.sdk_token) {
     Toast.show({
       type: ToastModes.error,
