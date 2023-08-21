@@ -13,7 +13,7 @@ export const GlobalStyles = StyleSheet.create({
     backgroundColor: COLORS.WHITE,
   },
   appBarHeightMargin: {
-    marginTop: StatusBar.currentHeight,
+    marginTop: 0,
   },
   screenHeadTxt: {
     fontSize: 20,

@@ -75,7 +75,6 @@ const Cards = () => {
         ItemSeparatorComponent={() => (
           <View style={{width: '100%', height: 10}} />
         )}
-        scrollEnabled={false}
         renderItem={({item}) => <RenderCard item={item} />}
         keyExtractor={item => item.number}
         style={{marginVertical: 15, flex: 1}}

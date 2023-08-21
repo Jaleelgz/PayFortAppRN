@@ -31,7 +31,7 @@ const Home = () => {
       return;
     }
 
-    navigation.navigate(cards?.length > 0 ? 'Cards' : 'AddCard', {amount});
+    navigation.navigate(cards?.length > 0 ? 'Cards' : 'AddNewCard', {amount});
   };
 
   useEffect(() => {
@@ -108,6 +108,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 300,
     resizeMode: 'contain',
+    marginBottom: 10,
   },
   payHeadTxt: {
     fontFamily: FONTS.InterBold,

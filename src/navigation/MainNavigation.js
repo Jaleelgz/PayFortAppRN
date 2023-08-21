@@ -1,10 +1,11 @@
-import { StyleSheet } from "react-native";
-import { createStackNavigator } from "@react-navigation/stack";
-import React from "react";
-import Home from "../screens/Home";
-import Cards from "../screens/Cards";
-import AddCard from "../screens/AddCard";
-import SuccessPage from "../screens/SuccessPage";
+import {StyleSheet} from 'react-native';
+import {createStackNavigator} from '@react-navigation/stack';
+import React from 'react';
+import Home from '../screens/Home';
+import Cards from '../screens/Cards';
+import AddCard from '../screens/AddCard';
+import SuccessPage from '../screens/SuccessPage';
+import AddCardByPayFortUI from '../screens/AddCardByPayFortUI';
 
 const Stack = createStackNavigator();
 
@@ -14,25 +15,29 @@ const MainNavigation = () => {
       screenOptions={{
         headerShown: false,
       }}
-      initialRouteName="Home"
-    >
+      initialRouteName="Home">
       <Stack.Screen
-        options={{ headerShown: false }}
+        options={{headerShown: false}}
         name="Home"
         component={Home}
       />
       <Stack.Screen
-        options={{ headerShown: false }}
+        options={{headerShown: false}}
         name="Cards"
         component={Cards}
       />
       <Stack.Screen
-        options={{ headerShown: false }}
+        options={{headerShown: false}}
         name="AddCard"
         component={AddCard}
       />
       <Stack.Screen
-        options={{ headerShown: false }}
+        options={{headerShown: false}}
+        name="AddNewCard"
+        component={AddCardByPayFortUI}
+      />
+      <Stack.Screen
+        options={{headerShown: false}}
         name="Success"
         component={SuccessPage}
       />
