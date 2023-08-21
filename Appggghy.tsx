@@ -9,7 +9,8 @@ import {
   CustomCheckoutView,
 } from 'rn-amazon-payment-services';
 import {getSignature, postData} from './utils/restServices';
-
+import {} from "@env"
+// 
 // ...
 
 export default function App() {
@@ -19,6 +20,9 @@ export default function App() {
     useState<boolean>(false);
 
   const [sdkToken, setSdkToken] = useState('');
+
+
+  console.log("Process :",process?.env)
 
   const setupDeviceId = async () => {
     const id: string = await getDeviceId();
