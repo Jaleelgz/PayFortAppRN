@@ -90,17 +90,14 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
+        release {
+            storeFile file('my-new-key.keystore')
+            storePassword 'android'
+            keyAlias 'my-new-key'
+            keyPassword 'android'
+        }
     }
 
-
-signingConfigs {
-    release {
-      storeFile file('my-key.keystore')
-      storePassword '123456'
-      keyAlias 'my-key'
-      keyPassword '123456'
-    }
-  }
 
     buildTypes {
         debug {
@@ -109,7 +106,6 @@ signingConfigs {
         release {
             // Caution! In production, you need to generate your own keystore file.
             // see https://reactnative.dev/docs/signed-apk-android.
-            signingConfig signingConfigs.debug
             signingConfig signingConfigs.release
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
@@ -120,6 +116,7 @@ signingConfigs {
 dependencies {
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
+    implementation 'androidx.work:work-runtime:2.7.1'
 
     debugImplementation("com.facebook.flipper:flipper:${FLIPPER_VERSION}")
     debugImplementation("com.facebook.flipper:flipper-network-plugin:${FLIPPER_VERSION}") {
